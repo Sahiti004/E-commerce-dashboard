@@ -2,7 +2,17 @@ import streamlit as st
 import pandas as pd
 import mysql.connector
 import matplotlib.pyplot as plt
-import seaborn as sns
+
+st.markdown(
+    """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 def get_data():
     conn = mysql.connector.connect(
@@ -19,12 +29,11 @@ def get_data():
 df = get_data()
 df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
 df['TotalPrice'] = df['Quantity'] * df['UnitPrice']
+start_date = df['InvoiceDate'].min()
+end_date = df['InvoiceDate'].max()
+df_filtered = df[(df['InvoiceDate'] >= start_date) & (df['InvoiceDate'] <= end_date)]
 
 st.title("📊 E-Commerce Sales Dashboard")
-st.sidebar.header("Filters")
-
-date_range = st.sidebar.date_input("Select Date Range", [df.InvoiceDate.min(), df.InvoiceDate.max()])
-df_filtered = df[(df.InvoiceDate.dt.date >= date_range[0]) & (df.InvoiceDate.dt.date <= date_range[1])]
 
 st.subheader("💰 Monthly Revenue")
 df_filtered['Month'] = df_filtered['InvoiceDate'].dt.to_period('M')
